@@ -16,7 +16,7 @@ class HomeDiscoverScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildHeader(),
-              _buildSearchBar(),
+              _buildSearchBar(context),
               _buildFilters(),
               _buildFeaturedSpaces(context),
               const SizedBox(height: 16),
@@ -80,10 +80,12 @@ class HomeDiscoverScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildSearchBar(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
+      child: GestureDetector(
+        onTap: () => context.push('/search-results'),
+        child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: AppColors.card,
@@ -118,7 +120,7 @@ class HomeDiscoverScreen extends StatelessWidget {
             ),
           ],
         ),
-      ),
+      )),
     );
   }
 
