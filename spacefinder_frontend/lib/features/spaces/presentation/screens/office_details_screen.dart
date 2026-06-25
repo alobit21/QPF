@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/custom_bottom_nav_bar.dart';
 
@@ -52,7 +53,7 @@ class OfficeDetailsScreen extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildIconButton(Icons.arrow_back, onTap: () => Navigator.of(context).pop()),
+              _buildIconButton(Icons.arrow_back, onTap: () => context.pop()),
               Row(
                 children: [
                   _buildIconButton(Icons.favorite_border),

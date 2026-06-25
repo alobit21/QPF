@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/custom_bottom_nav_bar.dart';
 
@@ -17,9 +18,9 @@ class HomeDiscoverScreen extends StatelessWidget {
               _buildHeader(),
               _buildSearchBar(),
               _buildFilters(),
-              _buildFeaturedSpaces(),
+              _buildFeaturedSpaces(context),
               const SizedBox(height: 16),
-              _buildNearYou(),
+              _buildNearYou(context),
               const SizedBox(height: 24),
             ],
           ),
@@ -175,7 +176,7 @@ class HomeDiscoverScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFeaturedSpaces() {
+  Widget _buildFeaturedSpaces(BuildContext context) {
     final spaces = [
       {
         'image': 'https://storage.googleapis.com/banani-generated-images/generated-images/41453429-4199-4d32-9dbd-47e5fe4a45ce.jpg',
@@ -223,10 +224,12 @@ class HomeDiscoverScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(
             children: spaces.map((space) {
-              return Container(
-                width: 240,
-                margin: const EdgeInsets.only(right: 16, bottom: 12),
-                decoration: BoxDecoration(
+              return GestureDetector(
+                onTap: () => context.push('/office-details'),
+                child: Container(
+                  width: 240,
+                  margin: const EdgeInsets.only(right: 16, bottom: 12),
+                  decoration: BoxDecoration(
                   color: AppColors.card,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
@@ -309,7 +312,7 @@ class HomeDiscoverScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-              );
+              ));
             }).toList(),
           ),
         ),
@@ -317,7 +320,7 @@ class HomeDiscoverScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildNearYou() {
+  Widget _buildNearYou(BuildContext context) {
     final spaces = [
       {
         'image': 'https://storage.googleapis.com/banani-generated-images/generated-images/abc459d2-e1c8-448e-9414-b57e520658f1.jpg',
@@ -350,9 +353,11 @@ class HomeDiscoverScreen extends StatelessWidget {
           const SizedBox(height: 12),
           // Using a mapped column rather than ListView to prevent RenderFlex overflow since it's already inside a SingleChildScrollView
           ...spaces.map((space) {
-            return Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
+            return GestureDetector(
+              onTap: () => context.push('/office-details'),
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
                 color: AppColors.card,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
@@ -413,7 +418,7 @@ class HomeDiscoverScreen extends StatelessWidget {
                   ),
                 ],
               ),
-            );
+            ));
           }).toList(),
         ],
       ),

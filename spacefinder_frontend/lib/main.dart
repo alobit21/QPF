@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'features/spaces/presentation/screens/office_details_screen.dart';
+import 'core/routes/app_router.dart';
 import 'core/constants/app_colors.dart';
 
 void main() {
@@ -16,7 +16,7 @@ class SpaceFinderApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Space Finder',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -25,7 +25,7 @@ class SpaceFinderApp extends StatelessWidget {
         fontFamily: 'DM Sans', // Set the font family from the design
         useMaterial3: true,
       ),
-      home: const OfficeDetailsScreen(),
+      routerConfig: appRouter,
     );
   }
 }
