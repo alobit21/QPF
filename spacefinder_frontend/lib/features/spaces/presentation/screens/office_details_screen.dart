@@ -28,7 +28,7 @@ class OfficeDetailsScreen extends StatelessWidget {
                 ),
               ),
             ),
-            _buildStickyBookingBar(),
+            _buildStickyBookingBar(context),
           ],
         ),
       ),
@@ -368,7 +368,7 @@ class OfficeDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStickyBookingBar() {
+  Widget _buildStickyBookingBar(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: const BoxDecoration(
@@ -399,18 +399,21 @@ class OfficeDetailsScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            decoration: BoxDecoration(color: AppColors.accent, borderRadius: BorderRadius.circular(8)),
-            alignment: Alignment.center,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(Icons.calendar_month, color: AppColors.accentForeground, size: 18),
-                SizedBox(width: 8),
-                Text('Book Now', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.accentForeground)),
-              ],
+          GestureDetector(
+            onTap: () => context.push('/book-slot'),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(color: AppColors.accent, borderRadius: BorderRadius.circular(8)),
+              alignment: Alignment.center,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(Icons.calendar_month, color: AppColors.accentForeground, size: 18),
+                  SizedBox(width: 8),
+                  Text('Book Now', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.accentForeground)),
+                ],
+              ),
             ),
           ),
         ],

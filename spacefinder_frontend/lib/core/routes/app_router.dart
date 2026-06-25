@@ -3,6 +3,7 @@ import '../../features/spaces/presentation/screens/home_discover_screen.dart';
 import '../../features/spaces/presentation/screens/office_details_screen.dart';
 import '../../features/spaces/presentation/screens/search_results_screen.dart';
 import '../../features/bookings/presentation/screens/my_bookings_screen.dart';
+import '../../features/bookings/presentation/screens/book_slot_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -22,6 +23,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/bookings',
       builder: (context, state) => const MyBookingsScreen(),
+    ),
+    GoRoute(
+      path: '/book-slot',
+      builder: (context, state) => const BookSlotScreen(),
     ),
   ],
 );
