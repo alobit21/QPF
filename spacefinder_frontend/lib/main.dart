@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'features/spaces/presentation/screens/home_discover_screen.dart';
+import 'features/spaces/presentation/screens/office_details_screen.dart';
 import 'core/constants/app_colors.dart';
 
 void main() {
@@ -25,7 +25,7 @@ class SpaceFinderApp extends StatelessWidget {
         fontFamily: 'DM Sans', // Set the font family from the design
         useMaterial3: true,
       ),
-      home: const HomeDiscoverScreen(),
+      home: const OfficeDetailsScreen(),
     );
   }
 }

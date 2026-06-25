@@ -6,9 +6,14 @@ class AppColors {
   static const Color border = Color(0xFFE2E8F0);
   static const Color primary = Color(0xFF2563EB);
   static const Color primaryForeground = Color(0xFFFFFFFF);
+  static const Color secondary = Color(0xFFDBEAFE);
+  static const Color secondaryForeground = Color(0xFF2563EB);
+  static const Color accent = Color(0xFFF4A261);
+  static const Color accentForeground = Color(0xFFFFFFFF);
   static const Color muted = Color(0xFFE2E8F0);
   static const Color mutedForeground = Color(0xFF6B7280);
   static const Color card = Color(0xFFFFFFFF);
   static const Color success = Color(0xFF10B981);
   static const Color warning = Color(0xFFF59E0B);
+  static const Color warningForeground = Color(0xFFFFFFFF);
 }
