@@ -13,7 +13,7 @@ export class AmenitiesController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.OWNER)
+  @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.MANAGER)
   @Post()
   create(@Body() createDto: any) {
     return this.amenitiesService.create(createDto);

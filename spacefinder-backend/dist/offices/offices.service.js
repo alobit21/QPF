@@ -50,16 +50,16 @@ let OfficesService = class OfficesService {
             throw new common_1.NotFoundException('Office not found');
         return office;
     }
-    async update(id, ownerId, updateDto) {
+    async update(id, ownerId, role, updateDto) {
         const office = await this.findOne(id);
-        if (office.ownerId !== ownerId)
+        if (office.ownerId !== ownerId && role !== 'admin' && role !== 'manager')
             throw new common_1.ForbiddenException('Not allowed');
         Object.assign(office, updateDto);
         return this.officesRepository.save(office);
     }
-    async remove(id, ownerId) {
+    async remove(id, ownerId, role) {
         const office = await this.findOne(id);
-        if (office.ownerId !== ownerId)
+        if (office.ownerId !== ownerId && role !== 'admin' && role !== 'manager')
             throw new common_1.ForbiddenException('Not allowed');
         await this.officesRepository.softRemove(office);
     }

@@ -5,6 +5,8 @@ import { Booking } from '../../bookings/entities/booking.entity';
 export enum UserRole {
   OWNER = 'owner',
   CUSTOMER = 'customer',
+  ADMIN = 'admin',
+  MANAGER = 'manager',
 }
 
 @Entity()

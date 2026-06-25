@@ -43,10 +43,10 @@ export class ReviewsService {
     });
   }
 
-  async remove(id: string, userId: string) {
+  async remove(id: string, userId: string, role: string) {
     const review = await this.reviewsRepository.findOne({ where: { id } });
     if (!review) throw new NotFoundException('Review not found');
-    if (review.userId !== userId) throw new ForbiddenException('Not allowed');
+    if (review.userId !== userId && role !== 'admin' && role !== 'manager') throw new ForbiddenException('Not allowed');
 
     return this.reviewsRepository.remove(review);
   }

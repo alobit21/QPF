@@ -10,7 +10,6 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const typeorm_1 = require("@nestjs/typeorm");
-const database_config_1 = require("./config/database.config");
 const auth_module_1 = require("./auth/auth.module");
 const users_module_1 = require("./users/users.module");
 const offices_module_1 = require("./offices/offices.module");
@@ -30,7 +29,16 @@ exports.AppModule = AppModule = __decorate([
                 isGlobal: true,
                 envFilePath: '.env',
             }),
-            typeorm_1.TypeOrmModule.forRoot((0, database_config_1.getDatabaseConfig)()),
+            typeorm_1.TypeOrmModule.forRootAsync({
+                imports: [config_1.ConfigModule],
+                inject: [config_1.ConfigService],
+                useFactory: (configService) => ({
+                    type: 'postgres',
+                    url: configService.get('DATABASE_URL'),
+                    autoLoadEntities: true,
+                    synchronize: configService.get('NODE_ENV') !== 'production',
+                }),
+            }),
             auth_module_1.AuthModule,
             users_module_1.UsersModule,
             offices_module_1.OfficesModule,

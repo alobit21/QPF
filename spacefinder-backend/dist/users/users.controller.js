@@ -16,12 +16,21 @@ exports.UsersController = void 0;
 const common_1 = require("@nestjs/common");
 const users_service_1 = require("./users.service");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const roles_guard_1 = require("../common/guards/roles.guard");
+const roles_decorator_1 = require("../common/decorators/roles.decorator");
+const user_entity_1 = require("./entities/user.entity");
 const current_user_decorator_1 = require("../common/decorators/current-user.decorator");
 const swagger_1 = require("@nestjs/swagger");
 let UsersController = class UsersController {
     usersService;
     constructor(usersService) {
         this.usersService = usersService;
+    }
+    findAll() {
+        return this.usersService.findAll();
+    }
+    updateRole(id, role) {
+        return this.usersService.update(id, { role });
     }
     getProfile(user) {
         return this.usersService.findById(user.userId);
@@ -37,6 +46,24 @@ let UsersController = class UsersController {
     }
 };
 exports.UsersController = UsersController;
+__decorate([
+    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.ADMIN, user_entity_1.UserRole.MANAGER),
+    (0, common_1.Get)(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.UseGuards)(roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.ADMIN),
+    (0, common_1.Patch)(':id/role'),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)('role')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "updateRole", null);
 __decorate([
     (0, common_1.Get)('profile'),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),

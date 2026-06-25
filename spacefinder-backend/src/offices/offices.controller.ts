@@ -33,18 +33,18 @@ export class OfficesController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.OWNER)
+  @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.MANAGER)
   @Patch(':id')
   update(@Param('id') id: string, @CurrentUser() user: any, @Body() updateDto: any) {
-    return this.officesService.update(id, user.userId, updateDto);
+    return this.officesService.update(id, user.userId, user.role, updateDto);
   }
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.OWNER)
+  @Roles(UserRole.OWNER, UserRole.ADMIN, UserRole.MANAGER)
   @Delete(':id')
   remove(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.officesService.remove(id, user.userId);
+    return this.officesService.remove(id, user.userId, user.role);
   }
 
   @ApiBearerAuth()

@@ -13,8 +13,8 @@ export declare class OfficesService {
         limit: any;
     }>;
     findOne(id: string): Promise<Office>;
-    update(id: string, ownerId: string, updateDto: any): Promise<Office>;
-    remove(id: string, ownerId: string): Promise<void>;
+    update(id: string, ownerId: string, role: string, updateDto: any): Promise<Office>;
+    remove(id: string, ownerId: string, role: string): Promise<void>;
     addAmenity(officeId: string, ownerId: string, amenityId: string): Promise<Office>;
     removeAmenity(officeId: string, ownerId: string, amenityId: string): Promise<Office>;
 }

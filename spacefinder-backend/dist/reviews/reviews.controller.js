@@ -36,7 +36,7 @@ let ReviewsController = class ReviewsController {
         return this.reviewsService.findByUser(user.userId);
     }
     remove(id, user) {
-        return this.reviewsService.remove(id, user.userId);
+        return this.reviewsService.remove(id, user.userId, user.role);
     }
 };
 exports.ReviewsController = ReviewsController;
@@ -71,7 +71,7 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.CUSTOMER),
+    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.CUSTOMER, user_entity_1.UserRole.ADMIN, user_entity_1.UserRole.MANAGER),
     (0, common_1.Delete)('reviews/:id'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, current_user_decorator_1.CurrentUser)()),

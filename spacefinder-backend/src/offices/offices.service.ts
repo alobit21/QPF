@@ -42,16 +42,16 @@ export class OfficesService {
     return office;
   }
 
-  async update(id: string, ownerId: string, updateDto: any) {
+  async update(id: string, ownerId: string, role: string, updateDto: any) {
     const office = await this.findOne(id);
-    if (office.ownerId !== ownerId) throw new ForbiddenException('Not allowed');
+    if (office.ownerId !== ownerId && role !== 'admin' && role !== 'manager') throw new ForbiddenException('Not allowed');
     Object.assign(office, updateDto);
     return this.officesRepository.save(office);
   }
 
-  async remove(id: string, ownerId: string) {
+  async remove(id: string, ownerId: string, role: string) {
     const office = await this.findOne(id);
-    if (office.ownerId !== ownerId) throw new ForbiddenException('Not allowed');
+    if (office.ownerId !== ownerId && role !== 'admin' && role !== 'manager') throw new ForbiddenException('Not allowed');
     await this.officesRepository.softRemove(office);
   }
 

@@ -8,5 +8,5 @@ export declare class ReviewsService {
     create(userId: string, createDto: any): Promise<Review[]>;
     findByOffice(officeId: string): Promise<Review[]>;
     findByUser(userId: string): Promise<Review[]>;
-    remove(id: string, userId: string): Promise<Review>;
+    remove(id: string, userId: string, role: string): Promise<Review>;
 }

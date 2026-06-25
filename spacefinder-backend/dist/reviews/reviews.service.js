@@ -50,11 +50,11 @@ let ReviewsService = class ReviewsService {
             relations: { office: true },
         });
     }
-    async remove(id, userId) {
+    async remove(id, userId, role) {
         const review = await this.reviewsRepository.findOne({ where: { id } });
         if (!review)
             throw new common_1.NotFoundException('Review not found');
-        if (review.userId !== userId)
+        if (review.userId !== userId && role !== 'admin' && role !== 'manager')
             throw new common_1.ForbiddenException('Not allowed');
         return this.reviewsRepository.remove(review);
     }

@@ -35,9 +35,9 @@ export class ReviewsController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.CUSTOMER)
+  @Roles(UserRole.CUSTOMER, UserRole.ADMIN, UserRole.MANAGER)
   @Delete('reviews/:id')
   remove(@Param('id') id: string, @CurrentUser() user: any) {
-    return this.reviewsService.remove(id, user.userId);
+    return this.reviewsService.remove(id, user.userId, user.role);
   }
 }
