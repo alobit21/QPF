@@ -5,6 +5,8 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/custom_bottom_nav_bar.dart';
 import '../providers/office_provider.dart';
 import '../../domain/office_model.dart';
+import '../../domain/amenity_model.dart';
+import '../../domain/slot_model.dart';
 
 class OfficeDetailsScreen extends ConsumerWidget {
   final String officeId;
@@ -33,8 +35,8 @@ class OfficeDetailsScreen extends ConsumerWidget {
                         _buildImageHeader(context, office),
                         _buildTitleAndRating(office),
                         _buildBadges(),
-                        _buildAmenities(),
-                        _buildAvailableRooms(),
+                        _buildAmenities(office.amenities),
+                        _buildAvailableRooms(office.slots),
                         _buildReviews(),
                       ],
                     ),
@@ -214,17 +216,25 @@ class OfficeDetailsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAmenities() {
-    final amenities = [
-      {'icon': Icons.wifi, 'label': 'High-Speed WiFi'},
-      {'icon': Icons.monitor, 'label': 'HD Monitors'},
-      {'icon': Icons.print, 'label': 'Printer'},
-      {'icon': Icons.local_cafe, 'label': 'Coffee Bar'},
-      {'icon': Icons.videocam, 'label': 'Video Conf.'},
-      {'icon': Icons.lock, 'label': '24/7 Access'},
-      {'icon': Icons.directions_car, 'label': 'Parking'},
-      {'icon': Icons.phone, 'label': 'Phone Booth'},
-    ];
+  Widget _buildAmenities(List<Amenity>? amenities) {
+    if (amenities == null || amenities.isEmpty) {
+      return const SizedBox();
+    }
+
+    // Helper map for string to IconData
+    IconData getIcon(String name) {
+      switch (name.toLowerCase()) {
+        case 'wifi': return Icons.wifi;
+        case 'monitor': return Icons.monitor;
+        case 'print': return Icons.print;
+        case 'coffee': return Icons.local_cafe;
+        case 'video': return Icons.videocam;
+        case 'lock': return Icons.lock;
+        case 'parking': return Icons.directions_car;
+        case 'phone': return Icons.phone;
+        default: return Icons.check_circle_outline;
+      }
+    }
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
@@ -251,10 +261,10 @@ class OfficeDetailsScreen extends ConsumerWidget {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(color: AppColors.secondary, borderRadius: BorderRadius.circular(8)),
-                    child: Icon(amenity['icon'] as IconData, color: AppColors.primary, size: 20),
+                    child: Icon(getIcon(amenity.icon), color: AppColors.primary, size: 20),
                   ),
                   const SizedBox(height: 6),
-                  Text(amenity['label'] as String, style: const TextStyle(fontSize: 11, color: AppColors.mutedForeground), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis),
+                  Text(amenity.name, style: const TextStyle(fontSize: 11, color: AppColors.mutedForeground), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis),
                 ],
               );
             },
@@ -264,13 +274,13 @@ class OfficeDetailsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAvailableRooms() {
-    final rooms = [
-      {'title': 'Hot Desk', 'pax': '1', 'slots': '8', 'price': '8'},
-      {'title': 'Private Office', 'pax': '4', 'slots': '3', 'price': '25'},
-      {'title': 'Meeting Room A', 'pax': '8', 'slots': '2', 'price': '40'},
-      {'title': 'Conference Hall', 'pax': '20', 'slots': '1', 'price': '80'},
-    ];
+  Widget _buildAvailableRooms(List<Slot>? slots) {
+    if (slots == null || slots.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
+        child: Text('No available rooms right now.', style: TextStyle(color: AppColors.mutedForeground)),
+      );
+    }
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
@@ -279,7 +289,7 @@ class OfficeDetailsScreen extends ConsumerWidget {
         children: [
           const Text('Available Rooms', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.foreground)),
           const SizedBox(height: 12),
-          ...rooms.map((room) {
+          ...slots.where((s) => s.isAvailable).map((slot) {
             return Container(
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -295,26 +305,29 @@ class OfficeDetailsScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(room['title']!, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.foreground)),
+                        Text(slot.roomNumber, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.foreground)),
                         const SizedBox(height: 2),
                         Row(
                           children: [
-                            const Icon(Icons.people, size: 11, color: AppColors.mutedForeground),
+                            const Icon(Icons.access_time, size: 11, color: AppColors.mutedForeground),
                             const SizedBox(width: 4),
-                            Text('Up to ${room['pax']} people · ', style: const TextStyle(fontSize: 12, color: AppColors.mutedForeground)),
-                            Text('${room['slots']} slots left', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.success)),
+                            Text('${slot.startTime} - ${slot.endTime} · ', style: const TextStyle(fontSize: 12, color: AppColors.mutedForeground)),
+                            const Text('Available', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.success)),
                           ],
                         ),
                       ],
                     ),
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text('\$${room['price']}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                      const Text('/hr', style: TextStyle(fontSize: 12, color: AppColors.mutedForeground)),
-                    ],
-                  ),
+                  GestureDetector(
+                    onTap: () {
+                      // Navigate to booking, pass slot ID
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+                      child: const Text('Book', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12)),
+                    ),
+                  )
                 ],
               ),
             );

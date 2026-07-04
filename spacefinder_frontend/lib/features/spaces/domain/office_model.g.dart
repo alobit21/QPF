@@ -14,11 +14,17 @@ _Office _$OfficeFromJson(Map<String, dynamic> json) => _Office(
   city: json['city'] as String,
   latitude: (json['latitude'] as num?)?.toDouble(),
   longitude: (json['longitude'] as num?)?.toDouble(),
-  pricePerHour: (json['pricePerHour'] as num?)?.toDouble(),
+  pricePerHour: _priceFromJson(json['pricePerHour']),
   size: (json['size'] as num?)?.toInt(),
   availableRooms: (json['availableRooms'] as num?)?.toInt(),
   images: (json['images'] as List<dynamic>?)?.map((e) => e as String).toList(),
   isActive: json['isActive'] as bool?,
+  amenities: (json['amenities'] as List<dynamic>?)
+      ?.map((e) => Amenity.fromJson(e as Map<String, dynamic>))
+      .toList(),
+  slots: (json['slots'] as List<dynamic>?)
+      ?.map((e) => Slot.fromJson(e as Map<String, dynamic>))
+      .toList(),
 );
 
 Map<String, dynamic> _$OfficeToJson(_Office instance) => <String, dynamic>{
@@ -34,4 +40,6 @@ Map<String, dynamic> _$OfficeToJson(_Office instance) => <String, dynamic>{
   'availableRooms': instance.availableRooms,
   'images': instance.images,
   'isActive': instance.isActive,
+  'amenities': instance.amenities,
+  'slots': instance.slots,
 };
