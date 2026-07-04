@@ -440,8 +440,9 @@ class OfficeDetailsScreen extends ConsumerWidget {
           GestureDetector(
             onTap: () {
               // Pass the first available slot as a quick book option
-              final firstAvailable = office.slots?.firstWhere((s) => s.isAvailable);
-              if (firstAvailable != null) {
+              final availableSlots = office.slots?.where((s) => s.isAvailable).toList() ?? [];
+              if (availableSlots.isNotEmpty) {
+                final firstAvailable = availableSlots.first;
                 context.push('/book-slot?officeId=${office.id}&slotId=${firstAvailable.id}');
               }
             },

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/custom_bottom_nav_bar.dart';
 import '../../../spaces/presentation/providers/office_provider.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 
 class BookSlotScreen extends ConsumerWidget {
   final String officeId;
@@ -30,8 +31,9 @@ class BookSlotScreen extends ConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, s) => Center(child: Text('Error: $e')),
           data: (office) {
-            final slot = office.slots?.firstWhere((s) => s.id == slotId);
-            if (slot == null) return const Center(child: Text('Slot not found'));
+            final slotList = office.slots?.where((s) => s.id == slotId).toList() ?? [];
+            if (slotList.isEmpty) return const Center(child: Text('Slot not found'));
+            final slot = slotList.first;
 
             return Column(
               children: [
@@ -50,7 +52,7 @@ class BookSlotScreen extends ConsumerWidget {
                       const SizedBox(height: 24),
                       _buildPriceSummary(slot.roomNumber, office.pricePerHour ?? 0),
                       const SizedBox(height: 24),
-                      _buildProceedButton(context),
+                      _buildProceedButton(context, ref),
                     ],
                   ),
                 ),
@@ -315,12 +317,18 @@ class BookSlotScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildProceedButton(BuildContext context) {
+  Widget _buildProceedButton(BuildContext context, WidgetRef ref) {
     return GestureDetector(
       onTap: () {
+        final authState = ref.read(authProvider);
+        if (authState.value == null) {
+          context.push('/login');
+          return;
+        }
+        
         // We will wire up the repository call here next!
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Booking flow coming right up!')),
+          const SnackBar(content: Text('User is authenticated! Proceeding...')),
         );
       },
       child: Container(

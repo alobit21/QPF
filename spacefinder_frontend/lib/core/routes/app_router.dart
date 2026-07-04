@@ -4,6 +4,8 @@ import '../../features/spaces/presentation/screens/office_details_screen.dart';
 import '../../features/spaces/presentation/screens/search_results_screen.dart';
 import '../../features/bookings/presentation/screens/my_bookings_screen.dart';
 import '../../features/bookings/presentation/screens/book_slot_screen.dart';
+import '../../features/auth/presentation/screens/login_screen.dart';
+import '../../features/auth/presentation/screens/signup_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -34,6 +36,14 @@ final appRouter = GoRouter(
         final slotId = state.uri.queryParameters['slotId'] ?? '';
         return BookSlotScreen(officeId: officeId, slotId: slotId);
       },
+    ),
+    GoRoute(
+      path: '/login',
+      builder: (context, state) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: '/signup',
+      builder: (context, state) => const SignupScreen(),
     ),
   ],
 );
