@@ -36,7 +36,7 @@ class OfficeDetailsScreen extends ConsumerWidget {
                         _buildTitleAndRating(office),
                         _buildBadges(),
                         _buildAmenities(office.amenities),
-                        _buildAvailableRooms(office.slots),
+                        _buildAvailableRooms(context, office),
                         _buildReviews(),
                       ],
                     ),
@@ -274,7 +274,8 @@ class OfficeDetailsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAvailableRooms(List<Slot>? slots) {
+  Widget _buildAvailableRooms(BuildContext context, Office office) {
+    final slots = office.slots;
     if (slots == null || slots.isEmpty) {
       return const Padding(
         padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
@@ -320,7 +321,7 @@ class OfficeDetailsScreen extends ConsumerWidget {
                   ),
                   GestureDetector(
                     onTap: () {
-                      // Navigate to booking, pass slot ID
+                      context.push('/book-slot?officeId=${office.id}&slotId=${slot.id}');
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -437,7 +438,13 @@ class OfficeDetailsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           GestureDetector(
-            onTap: () => context.push('/book-slot'),
+            onTap: () {
+              // Pass the first available slot as a quick book option
+              final firstAvailable = office.slots?.firstWhere((s) => s.isAvailable);
+              if (firstAvailable != null) {
+                context.push('/book-slot?officeId=${office.id}&slotId=${firstAvailable.id}');
+              }
+            },
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 14),

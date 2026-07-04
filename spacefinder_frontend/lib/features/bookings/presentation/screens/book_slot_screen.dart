@@ -1,45 +1,69 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/custom_bottom_nav_bar.dart';
+import '../../../spaces/presentation/providers/office_provider.dart';
 
-class BookSlotScreen extends StatelessWidget {
-  const BookSlotScreen({Key? key}) : super(key: key);
+class BookSlotScreen extends ConsumerWidget {
+  final String officeId;
+  final String slotId;
+
+  const BookSlotScreen({
+    Key? key,
+    required this.officeId,
+    required this.slotId,
+  }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (officeId.isEmpty || slotId.isEmpty) {
+      return const Scaffold(body: Center(child: Text('Invalid Booking Info')));
+    }
+
+    final officeAsync = ref.watch(officeDetailsProvider(officeId));
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(context),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                children: [
-                  _buildCalendar(),
-                  const SizedBox(height: 24),
-                  _buildSelectRoom(),
-                  const SizedBox(height: 24),
-                  _buildTimeSlots(),
-                  const SizedBox(height: 24),
-                  _buildDuration(),
-                  const SizedBox(height: 24),
-                  _buildPriceSummary(),
-                  const SizedBox(height: 24),
-                  _buildProceedButton(),
-                ],
-              ),
-            ),
-          ],
+        child: officeAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, s) => Center(child: Text('Error: $e')),
+          data: (office) {
+            final slot = office.slots?.firstWhere((s) => s.id == slotId);
+            if (slot == null) return const Center(child: Text('Slot not found'));
+
+            return Column(
+              children: [
+                _buildHeader(context, office.name),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    children: [
+                      _buildCalendar(),
+                      const SizedBox(height: 24),
+                      _buildSelectRoom(slot.roomNumber, office.pricePerHour ?? 0),
+                      const SizedBox(height: 24),
+                      _buildTimeSlots(slot.startTime, slot.endTime),
+                      const SizedBox(height: 24),
+                      _buildDuration(),
+                      const SizedBox(height: 24),
+                      _buildPriceSummary(slot.roomNumber, office.pricePerHour ?? 0),
+                      const SizedBox(height: 24),
+                      _buildProceedButton(context),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
-      bottomNavigationBar: const CustomBottomNavBar(currentIndex: 2), // Keep bookings tab active as per image
+      bottomNavigationBar: const CustomBottomNavBar(currentIndex: 2),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, String officeName) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
       child: Row(
@@ -63,9 +87,9 @@ class BookSlotScreen extends StatelessWidget {
           const SizedBox(width: 16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text('Book a Slot', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.foreground)),
-              Text('Dodoma Tech Hub', style: TextStyle(fontSize: 14, color: AppColors.mutedForeground)),
+            children: [
+              const Text('Book a Slot', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.foreground)),
+              Text(officeName, style: const TextStyle(fontSize: 14, color: AppColors.mutedForeground)),
             ],
           ),
         ],
@@ -147,11 +171,11 @@ class BookSlotScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSelectRoom() {
+  Widget _buildSelectRoom(String roomNumber, double price) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Select Room', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.foreground)),
+        const Text('Selected Room', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.foreground)),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -162,15 +186,11 @@ class BookSlotScreen extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const Icon(Icons.desk, size: 20, color: AppColors.primary), // Close enough to the room icon
+              const Icon(Icons.desk, size: 20, color: AppColors.primary),
               const SizedBox(width: 12),
-              const Text('Hot Desk', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.foreground)),
-              const SizedBox(width: 8),
-              const Text('— 1 person', style: TextStyle(fontSize: 14, color: AppColors.mutedForeground)),
+              Text(roomNumber, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.foreground)),
               const Spacer(),
-              const Text('\$8/hr', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primary)),
-              const SizedBox(width: 8),
-              const Icon(Icons.keyboard_arrow_down, size: 16, color: AppColors.mutedForeground),
+              Text('\$$price/hr', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.primary)),
             ],
           ),
         ),
@@ -178,78 +198,27 @@ class BookSlotScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTimeSlots() {
-    final slots = [
-      {'time': '08:00', 'status': 'available'},
-      {'time': '09:00', 'status': 'selected'},
-      {'time': '10:00', 'status': 'booked'},
-      {'time': '11:00', 'status': 'selected'},
-      {'time': '12:00', 'status': 'available'},
-      {'time': '13:00', 'status': 'booked'},
-      {'time': '14:00', 'status': 'available'},
-      {'time': '15:00', 'status': 'available'},
-      {'time': '16:00', 'status': 'available'},
-      {'time': '17:00', 'status': 'booked'},
-      {'time': '18:00', 'status': 'available'},
-      {'time': '19:00', 'status': 'available'},
-    ];
-
+  Widget _buildTimeSlots(String startTime, String endTime) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text('Time Slots', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.foreground)),
-            Row(
-              children: [
-                _buildLegend(AppColors.primary, 'Selected'),
-                const SizedBox(width: 12),
-                _buildLegend(AppColors.border, 'Booked'),
-              ],
-            ),
-          ],
-        ),
+        const Text('Time Slot', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.foreground)),
         const SizedBox(height: 12),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 2.2,
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.primary),
           ),
-          itemCount: slots.length,
-          itemBuilder: (context, index) {
-            final slot = slots[index];
-            final status = slot['status'];
-            final time = slot['time'];
-            
-            Color bgColor = AppColors.card;
-            Color textColor = AppColors.foreground;
-            Color borderColor = AppColors.border;
-
-            if (status == 'selected') {
-              bgColor = AppColors.primary;
-              textColor = AppColors.primaryForeground;
-              borderColor = AppColors.primary;
-            } else if (status == 'booked') {
-              bgColor = AppColors.border.withOpacity(0.5);
-              textColor = AppColors.mutedForeground;
-              borderColor = Colors.transparent;
-            }
-
-            return Container(
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: bgColor,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: borderColor),
-              ),
-              child: Text(time!, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: textColor)),
-            );
-          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.access_time, color: AppColors.primary, size: 20),
+              const SizedBox(width: 8),
+              Text('$startTime - $endTime', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary)),
+            ],
+          ),
         ),
       ],
     );
@@ -301,7 +270,9 @@ class BookSlotScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPriceSummary() {
+  Widget _buildPriceSummary(String roomNumber, double price) {
+    final double total = price + 1.50; // Add fixed service fee for demo
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -316,9 +287,9 @@ class BookSlotScreen extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text('Hot Desk × 2 hrs', style: TextStyle(fontSize: 14, color: AppColors.mutedForeground)),
-              Text('\$16.00', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.foreground)),
+            children: [
+              Text('$roomNumber × 1 hr', style: const TextStyle(fontSize: 14, color: AppColors.mutedForeground)),
+              Text('\$${price.toStringAsFixed(2)}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.foreground)),
             ],
           ),
           const SizedBox(height: 8),
@@ -334,9 +305,9 @@ class BookSlotScreen extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text('Total', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.foreground)),
-              Text('\$17.50', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary)),
+            children: [
+              const Text('Total', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.foreground)),
+              Text('\$${total.toStringAsFixed(2)}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary)),
             ],
           ),
         ],
@@ -344,19 +315,27 @@ class BookSlotScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProceedButton() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(color: AppColors.accent, borderRadius: BorderRadius.circular(12)),
-      alignment: Alignment.center,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Icon(Icons.credit_card, color: AppColors.accentForeground, size: 18),
-          SizedBox(width: 8),
-          Text('Proceed to Payment', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.accentForeground)),
-        ],
+  Widget _buildProceedButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        // We will wire up the repository call here next!
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Booking flow coming right up!')),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(color: AppColors.accent, borderRadius: BorderRadius.circular(12)),
+        alignment: Alignment.center,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            Icon(Icons.credit_card, color: AppColors.accentForeground, size: 18),
+            SizedBox(width: 8),
+            Text('Proceed to Payment', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.accentForeground)),
+          ],
+        ),
       ),
     );
   }

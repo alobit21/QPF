@@ -29,7 +29,11 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/book-slot',
-      builder: (context, state) => const BookSlotScreen(),
+      builder: (context, state) {
+        final officeId = state.uri.queryParameters['officeId'] ?? '';
+        final slotId = state.uri.queryParameters['slotId'] ?? '';
+        return BookSlotScreen(officeId: officeId, slotId: slotId);
+      },
     ),
   ],
 );
