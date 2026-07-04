@@ -17,16 +17,16 @@ class AuthRepository {
       'email': email,
       'password': password,
     });
-    return response.data; // expects { access_token: ... }
+    return response.data['data']; // unwrap the global response format
   }
 
   Future<Map<String, dynamic>> register(Map<String, dynamic> data) async {
     final response = await _dio.post('/auth/register', data: data);
-    return response.data; // expects { access_token: ... }
+    return response.data['data']; // unwrap the global response format
   }
 
   Future<User> getProfile() async {
     final response = await _dio.get('/users/profile');
-    return User.fromJson(response.data);
+    return User.fromJson(response.data['data']); // unwrap the global response format
   }
 }

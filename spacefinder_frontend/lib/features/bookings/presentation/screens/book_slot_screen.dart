@@ -5,6 +5,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/custom_bottom_nav_bar.dart';
 import '../../../spaces/presentation/providers/office_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../data/booking_repository.dart';
 
 class BookSlotScreen extends ConsumerWidget {
   final String officeId;
@@ -319,17 +320,36 @@ class BookSlotScreen extends ConsumerWidget {
 
   Widget _buildProceedButton(BuildContext context, WidgetRef ref) {
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
         final authState = ref.read(authProvider);
         if (authState.value == null) {
           context.push('/login');
           return;
         }
         
-        // We will wire up the repository call here next!
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('User is authenticated! Proceeding...')),
-        );
+        try {
+          // Show loading snackbar
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Processing booking...')),
+          );
+
+          await ref.read(bookingRepositoryProvider).createBooking(
+            officeId,
+            slotId,
+            1, // 1 hour default
+          );
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Booking Confirmed! 🎉'), backgroundColor: AppColors.success),
+          );
+
+          // Return to home page
+          context.go('/');
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Booking failed: $e'), backgroundColor: Colors.red),
+          );
+        }
       },
       child: Container(
         width: double.infinity,
