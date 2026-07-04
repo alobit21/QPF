@@ -6,3 +6,8 @@ final officesProvider = FutureProvider.autoDispose<List<Office>>((ref) async {
   final repository = ref.watch(officeRepositoryProvider);
   return repository.getOffices(limit: 10); // Fetch top 10 for now
 });
+
+final officeDetailsProvider = FutureProvider.family.autoDispose<Office, String>((ref, id) async {
+  final repository = ref.watch(officeRepositoryProvider);
+  return repository.getOfficeById(id);
+});

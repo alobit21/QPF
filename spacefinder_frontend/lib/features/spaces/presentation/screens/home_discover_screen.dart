@@ -212,7 +212,7 @@ class HomeDiscoverScreen extends ConsumerWidget {
                       ? space.images!.first 
                       : 'https://storage.googleapis.com/banani-generated-images/generated-images/41453429-4199-4d32-9dbd-47e5fe4a45ce.jpg';
                   return GestureDetector(
-                    onTap: () => context.push('/office-details'),
+                    onTap: () => context.push('/office-details?id=${space.id}'),
                     child: Container(
                       width: 240,
                       margin: const EdgeInsets.only(right: 16, bottom: 12),
@@ -334,7 +334,7 @@ class HomeDiscoverScreen extends ConsumerWidget {
                     ? space.images!.first 
                     : 'https://storage.googleapis.com/banani-generated-images/generated-images/abc459d2-e1c8-448e-9414-b57e520658f1.jpg';
                 return GestureDetector(
-                  onTap: () => context.push('/office-details'),
+                  onTap: () => context.push('/office-details?id=${space.id}'),
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     decoration: BoxDecoration(

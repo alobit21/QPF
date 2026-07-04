@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/custom_bottom_nav_bar.dart';
+import '../providers/office_provider.dart';
+import '../../domain/office_model.dart';
 
-class SearchResultsScreen extends StatelessWidget {
+class SearchResultsScreen extends ConsumerWidget {
   const SearchResultsScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final officesAsyncValue = ref.watch(officesProvider);
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -16,10 +21,10 @@ class SearchResultsScreen extends StatelessWidget {
           children: [
             _buildTopSearch(context),
             _buildFilters(),
-            _buildListMapToggle(),
+            _buildListMapToggle(officesAsyncValue),
             _buildSortBy(),
             Expanded(
-              child: _buildResultsList(context),
+              child: _buildResultsList(context, officesAsyncValue),
             ),
           ],
         ),
@@ -125,17 +130,22 @@ class SearchResultsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildListMapToggle() {
+  Widget _buildListMapToggle(AsyncValue<List<Office>> officesAsyncValue) {
+    final countText = officesAsyncValue.maybeWhen(
+      data: (offices) => '${offices.length} ',
+      orElse: () => '... ',
+    );
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           RichText(
-            text: const TextSpan(
+            text: TextSpan(
               children: [
-                TextSpan(text: '24 ', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.foreground, fontSize: 14)),
-                TextSpan(text: 'spaces found', style: TextStyle(color: AppColors.mutedForeground, fontSize: 14)),
+                TextSpan(text: countText, style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.foreground, fontSize: 14)),
+                const TextSpan(text: 'spaces found', style: TextStyle(color: AppColors.mutedForeground, fontSize: 14)),
               ],
             ),
           ),
@@ -202,144 +212,117 @@ class SearchResultsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildResultsList(BuildContext context) {
-    final results = [
-      {
-        'title': 'Dodoma Tech Hub',
-        'location': 'Dodoma, Tanzania',
-        'image': 'https://storage.googleapis.com/banani-generated-images/generated-images/2fa80919-a285-4482-93ed-60cb955006d7.jpg',
-        'rating': '4.8',
-        'reviews': '124',
-        'price': '8',
-        'amenities': [Icons.wifi, Icons.monitor, Icons.print],
-      },
-      {
-        'title': 'Creative Space Arusha',
-        'location': 'Arusha, Tanzania',
-        'image': 'https://storage.googleapis.com/banani-generated-images/generated-images/eaed6f24-7bf7-474f-b9f4-9a0cb105c4bf.jpg',
-        'rating': '4.7',
-        'reviews': '98',
-        'price': '10',
-        'amenities': [Icons.wifi, Icons.videocam, Icons.local_cafe],
-      },
-      {
-        'title': 'Dar Hub Central',
-        'location': 'Dar es Salaam, Tanzania',
-        'image': 'https://storage.googleapis.com/banani-generated-images/generated-images/b64a87cf-e206-4fa0-89e6-ffecc368ed3b.jpg',
-        'rating': '4.9',
-        'reviews': '210',
-        'price': '12',
-        'amenities': [Icons.wifi, Icons.monitor, Icons.phone],
-      },
-      {
-        'title': 'InnoSpace Mwanza',
-        'location': 'Mwanza, Tanzania',
-        'image': 'https://storage.googleapis.com/banani-generated-images/generated-images/88916177-1582-4821-95b1-dab2054963b2.jpg',
-        'rating': '4.5',
-        'reviews': '56',
-        'price': '7',
-        'amenities': [Icons.wifi, Icons.print, Icons.local_cafe],
-      },
-      {
-        'title': 'Kilimanjaro Works',
-        'location': 'Moshi, Tanzania',
-        'image': 'https://storage.googleapis.com/banani-generated-images/generated-images/f984e8e9-7943-487a-8a85-ee0d5f1ef74e.jpg',
-        'rating': '4.6',
-        'reviews': '73',
-        'price': '9',
-        'amenities': [Icons.wifi, Icons.videocam, Icons.monitor],
-      },
-    ];
-
-    return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-      itemCount: results.length,
-      itemBuilder: (context, index) {
-        final item = results[index];
-        return GestureDetector(
-          onTap: () => context.push('/office-details'),
-          child: Container(
-            height: 110,
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-              color: AppColors.card,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.07), blurRadius: 10, offset: const Offset(0, 2)),
-              ],
+  Widget _buildResultsList(BuildContext context, AsyncValue<List<Office>> officesAsyncValue) {
+    return officesAsyncValue.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, s) => Center(child: Text('Error loading results: $e', style: const TextStyle(color: Colors.red))),
+      data: (offices) {
+        if (offices.isEmpty) {
+          return const Center(
+            child: Text(
+              'No spaces found for this search.',
+              style: TextStyle(color: AppColors.mutedForeground),
             ),
-            child: Row(
-              children: [
-                ClipRRect(
-                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
-                  child: Image.network(
-                    item['image'] as String,
-                    width: 110,
-                    height: 110,
-                    fit: BoxFit.cover,
-                    errorBuilder: (c, e, s) => Container(width: 110, height: 110, color: AppColors.muted),
-                  ),
+          );
+        }
+        return ListView.builder(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+          itemCount: offices.length,
+          itemBuilder: (context, index) {
+            final space = offices[index];
+            final image = (space.images != null && space.images!.isNotEmpty) 
+                ? space.images!.first 
+                : 'https://storage.googleapis.com/banani-generated-images/generated-images/2fa80919-a285-4482-93ed-60cb955006d7.jpg';
+            
+            // Hardcode amenities based on active status for placeholder purposes
+            final mockAmenities = [Icons.wifi, Icons.local_cafe, Icons.monitor];
+
+            return GestureDetector(
+              onTap: () => context.push('/office-details?id=${space.id}'), // Pass ID dynamically
+              child: Container(
+                height: 110,
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.card,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withOpacity(0.07), blurRadius: 10, offset: const Offset(0, 2)),
+                  ],
                 ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
+                child: Row(
+                  children: [
+                    ClipRRect(
+                      borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+                      child: Image.network(
+                        image,
+                        width: 110,
+                        height: 110,
+                        fit: BoxFit.cover,
+                        errorBuilder: (c, e, s) => Container(width: 110, height: 110, color: AppColors.muted),
+                      ),
+                    ),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(item['title'] as String, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.foreground), maxLines: 1, overflow: TextOverflow.ellipsis),
-                            const SizedBox(height: 2),
-                            Row(
-                              children: [
-                                const Icon(Icons.location_on, size: 10, color: AppColors.mutedForeground),
-                                const SizedBox(width: 4),
-                                Expanded(child: Text(item['location'] as String, style: const TextStyle(fontSize: 12, color: AppColors.mutedForeground), maxLines: 1, overflow: TextOverflow.ellipsis)),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: (item['amenities'] as List<IconData>).map((icon) {
-                            return Container(
-                              width: 24,
-                              height: 24,
-                              margin: const EdgeInsets.only(right: 8),
-                              decoration: BoxDecoration(color: AppColors.secondary, borderRadius: BorderRadius.circular(4)),
-                              child: Icon(icon, size: 13, color: AppColors.primary),
-                            );
-                          }).toList(),
-                        ),
-                        Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Icon(Icons.star, size: 12, color: AppColors.warning),
-                                const SizedBox(width: 4),
-                                Text(item['rating'] as String, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.foreground)),
-                                const SizedBox(width: 4),
-                                Text('(${item['reviews']})', style: const TextStyle(fontSize: 12, color: AppColors.mutedForeground)),
+                                Text(space.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.foreground), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                const SizedBox(height: 2),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.location_on, size: 10, color: AppColors.mutedForeground),
+                                    const SizedBox(width: 4),
+                                    Expanded(child: Text(space.city, style: const TextStyle(fontSize: 12, color: AppColors.mutedForeground), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                                  ],
+                                ),
                               ],
                             ),
                             Row(
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: mockAmenities.map((icon) {
+                                return Container(
+                                  width: 24,
+                                  height: 24,
+                                  margin: const EdgeInsets.only(right: 8),
+                                  decoration: BoxDecoration(color: AppColors.secondary, borderRadius: BorderRadius.circular(4)),
+                                  child: Icon(icon, size: 13, color: AppColors.primary),
+                                );
+                              }).toList(),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('\$${item['price']}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                                const Text('/hr', style: TextStyle(fontSize: 12, color: AppColors.mutedForeground)),
+                                Row(
+                                  children: const [
+                                    Icon(Icons.star, size: 12, color: AppColors.warning),
+                                    SizedBox(width: 4),
+                                    Text('4.8', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.foreground)),
+                                    SizedBox(width: 4),
+                                    Text('(124)', style: TextStyle(fontSize: 12, color: AppColors.mutedForeground)),
+                                  ],
+                                ),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text('\$${space.pricePerHour ?? 0}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                                    const Text('/hr', style: TextStyle(fontSize: 12, color: AppColors.mutedForeground)),
+                                  ],
+                                ),
                               ],
                             ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );

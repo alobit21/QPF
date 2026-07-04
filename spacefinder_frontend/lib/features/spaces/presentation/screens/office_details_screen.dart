@@ -1,46 +1,63 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/widgets/custom_bottom_nav_bar.dart';
+import '../providers/office_provider.dart';
+import '../../domain/office_model.dart';
 
-class OfficeDetailsScreen extends StatelessWidget {
-  const OfficeDetailsScreen({Key? key}) : super(key: key);
+class OfficeDetailsScreen extends ConsumerWidget {
+  final String officeId;
+  const OfficeDetailsScreen({Key? key, required this.officeId}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (officeId.isEmpty) return const Scaffold(body: Center(child: Text('Invalid Office ID')));
+
+    final officeAsync = ref.watch(officeDetailsProvider(officeId));
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildImageHeader(context),
-                    _buildTitleAndRating(),
-                    _buildBadges(),
-                    _buildAmenities(),
-                    _buildAvailableRooms(),
-                    _buildReviews(),
-                  ],
+        child: officeAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, s) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.red))),
+          data: (office) {
+            return Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildImageHeader(context, office),
+                        _buildTitleAndRating(office),
+                        _buildBadges(),
+                        _buildAmenities(),
+                        _buildAvailableRooms(),
+                        _buildReviews(),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            _buildStickyBookingBar(context),
-          ],
+                _buildStickyBookingBar(context, office),
+              ],
+            );
+          },
         ),
       ),
       bottomNavigationBar: const CustomBottomNavBar(currentIndex: 1), // Explore tab selected based on design
     );
   }
 
-  Widget _buildImageHeader(BuildContext context) {
+  Widget _buildImageHeader(BuildContext context, Office office) {
+    final imageUrl = (office.images != null && office.images!.isNotEmpty) 
+        ? office.images!.first 
+        : 'https://storage.googleapis.com/banani-generated-images/generated-images/823dbf9f-229c-4617-b6af-ca32ee681b99.jpg';
     return Stack(
       children: [
         Image.network(
-          'https://storage.googleapis.com/banani-generated-images/generated-images/823dbf9f-229c-4617-b6af-ca32ee681b99.jpg',
+          imageUrl,
           height: 230,
           width: double.infinity,
           fit: BoxFit.cover,
@@ -112,7 +129,7 @@ class OfficeDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTitleAndRating() {
+  Widget _buildTitleAndRating(Office office) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       child: Row(
@@ -123,20 +140,27 @@ class OfficeDetailsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Dodoma Tech Hub',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.foreground, height: 1.2),
+                Text(
+                  office.name,
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.foreground, height: 1.2),
                 ),
                 const SizedBox(height: 4),
                 Row(
-                  children: const [
-                    Icon(Icons.location_on, size: 13, color: AppColors.primary),
-                    SizedBox(width: 4),
+                  children: [
+                    const Icon(Icons.location_on, size: 13, color: AppColors.primary),
+                    const SizedBox(width: 4),
                     Expanded(
-                      child: Text('Dodoma City Centre, Tanzania', style: TextStyle(fontSize: 14, color: AppColors.mutedForeground)),
+                      child: Text('${office.city}, Tanzania', style: const TextStyle(fontSize: 14, color: AppColors.mutedForeground)),
                     ),
                   ],
                 ),
+                if (office.description.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    office.description,
+                    style: const TextStyle(fontSize: 14, color: AppColors.mutedForeground, height: 1.4),
+                  ),
+                ],
               ],
             ),
           ),
@@ -368,7 +392,7 @@ class OfficeDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStickyBookingBar(BuildContext context) {
+  Widget _buildStickyBookingBar(BuildContext context, Office office) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: const BoxDecoration(
@@ -382,9 +406,9 @@ class OfficeDetailsScreen extends StatelessWidget {
             children: [
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
-                children: const [
-                  Text('\$8', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary)),
-                  Text('/hr · From', style: TextStyle(fontSize: 14, color: AppColors.mutedForeground)),
+                children: [
+                  Text('\$${office.pricePerHour ?? 0}', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.primary)),
+                  const Text('/hr · From', style: TextStyle(fontSize: 14, color: AppColors.mutedForeground)),
                 ],
               ),
               Row(

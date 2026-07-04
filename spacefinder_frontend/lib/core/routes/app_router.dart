@@ -14,7 +14,10 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/office-details',
-      builder: (context, state) => const OfficeDetailsScreen(),
+      builder: (context, state) {
+        final id = state.uri.queryParameters['id'] ?? '';
+        return OfficeDetailsScreen(officeId: id);
+      },
     ),
     GoRoute(
       path: '/search-results',
