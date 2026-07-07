@@ -6,7 +6,6 @@ import '../../../../core/widgets/custom_bottom_nav_bar.dart';
 import '../providers/office_provider.dart';
 import '../../domain/office_model.dart';
 import '../../domain/amenity_model.dart';
-import '../../domain/slot_model.dart';
 
 class OfficeDetailsScreen extends ConsumerWidget {
   final String officeId;
